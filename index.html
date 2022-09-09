@@ -1,0 +1,174 @@
+<html>
+  <script src="main.js"></script>
+<body>
+  <div style="width: 1000px; height: 600px; background-color: Black;">
+    <div id="starBackground" style="width: 100%; height: 100%; background-image: url('star-background.jpeg');">
+      <div id="starShip" style="width: 25px; height: 25px; background-color: white; position: absolute;">
+        
+
+      </div>
+    </div>   
+  </div>
+</body>
+<script>
+
+const starBackground = document.getElementById('starBackground')
+const starShip = document.getElementById('starShip')
+const bulletList = []
+const monsterList = []
+
+// 要素の大きさ
+const monsterWidth = 50
+const monsterHeight = 50
+
+let positionY = 0
+let shipCoordinate = { x: 100, y: 450 }
+
+setInterval(() => {
+    positionY += 1
+    starBackground.style.backgroundPositionY = `${positionY}px`
+}, 50)
+
+function renderShip() {
+  starShip.style.left = shipCoordinate.x
+  starShip.style.top = shipCoordinate.y
+}
+
+renderShip()
+
+// 当たり判定
+function kill(monster, monsterCoordinate) {
+  for (var i = 0; i < bulletList.length; i++) {
+    const bulletX = bulletList[i].x
+    const bulletY = bulletList[i].y
+
+    // 敵の当たり範囲を作る
+    const monsterLeft = monsterCoordinate.x
+    const monsterRight = monsterCoordinate.x + monsterWidth
+    const monsterTop = monsterCoordinate.y
+    const monsterBottom = monsterCoordinate.y + monsterHeight
+
+    if (bulletX >= monsterLeft && bulletX <= monsterRight 
+    && bulletY >= monsterTop && bulletY <= monsterBottom) {
+      console.log('kill')
+      monster.remove()
+    }
+  }
+}
+
+
+
+function renderEnemy() {
+  // 要素の追加
+  const monster = document.createElement("img")
+  monster.src = "alien-monster.png"
+  monster.style.position = 'absolute'
+  monster.width = "50"
+  starBackground.appendChild(monster)
+
+
+  // 初期座標
+  const monsterCoordinate = { x: 100, y: 8 } // developer console で確認するとわかりますが、<body> には実は 8px のマージンがあります
+  monster.style.left = monsterCoordinate.x
+  monster.style.top = monsterCoordinate.y
+
+  //座標の変化
+  setInterval(()=>
+  {
+    // 横に動かす値をランダムで決める
+    // Math.random は 0 <= x < 1 の間の数字を返す
+    var shiftX = Math.floor(Math.random() * 10) + 1 // 1 から 5の間の整数を返す
+    shiftX *= Math.round(Math.random()) ? 1 : -1 // ランダムで + か - か決める 
+
+    monsterCoordinate.x += shiftX
+    monsterCoordinate.y += 5 // 敵を徐々に下に動かす
+    monster.style.left = monsterCoordinate.x
+    monster.style.top = monsterCoordinate.y
+    
+    // 配列に追加
+    monsterList.push(monsterCoordinate)
+    //画面外に出た要素を消す
+    if (monsterCoordinate.y > 600) //画面外か判定(数字同士を比較）
+    { 
+      monster.remove()
+    }
+  } , 100)       
+  
+  // kill 判定
+  setInterval(() => {
+    kill(monster, monsterCoordinate)
+  }, 10)
+}
+
+// 敵を出し続ける
+renderEnemy() // 最初の1回
+setInterval(() => {
+  renderEnemy()
+}, 5000)
+
+
+const game={}
+
+function shoot()
+{
+  //弾の要素を作成
+  const bullet = document.createElement("div") 
+  bullet.style.color = 'White' 
+  bullet.innerText="* "
+  bullet.style.position='absolute'
+  //背景の子要素
+  starBackground.appendChild(bullet) 
+ 
+  //数字を別に管理
+  const bulletCoord 
+  = { x: shipCoordinate.x + 7,
+      y: shipCoordinate.y - 20 }
+  
+   //初期の座標を設定
+  bullet.style.left = bulletCoord.x  //X座標の開始点
+  bullet.style.top =  bulletCoord.y //Y座標の開始点    
+
+  //座標の変化
+  setInterval(()=>
+  {
+    game.fps = 30
+    const shotSpeed = 5 //弾の速さ(1フレームに5px)
+    bulletCoord.y -= 5 //真上に向けて移動(1フレームに5px)
+    bullet.style.top = bulletCoord.y
+
+    //画面外に出た要素を消す
+    if (bulletCoord.y < 0)//画面外か判定(数字同士を比較）
+    { 
+      bullet.remove()
+    } 
+
+    // 座標を配列に追加
+    bulletList.push(bulletCoord)
+  } , 50)        
+}
+
+document.addEventListener('keydown', (e) => {
+  console.info(e.keyCode)
+  switch(e.keyCode) {
+    case 38: // 'up'
+      shipCoordinate.y -= 5
+      break
+    case 40: // 'down'
+      shipCoordinate.y += 5
+      break
+    case 37: // left
+      shipCoordinate.x -= 5
+      break
+    case 39: // right
+      shipCoordinate.x += 5
+      break
+    case 32: //space
+      shoot()
+      break
+  }
+  renderShip()
+})
+
+
+</script>
+</html>
